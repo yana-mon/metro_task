@@ -2,6 +2,7 @@ require 'rspec'
 require 'yaml'
 require './metro_infopoint'
 path_to_file = "./config/timing#{ENV['VARIANT']}.yml"
+config_path = "./config/config.yml"
 timing_data = YAML.load_file(path_to_file)['timing']
 
 
@@ -34,8 +35,8 @@ FROM_TO_PAIRS = [
       timing_data.find { |e| e['start'].to_s == 'konotopska' && e['end'].to_s == 'shevchenkivska' }['time'] +
         timing_data.find { |e| e['start'].to_s == 'shevchenkivska' && e['end'].to_s == 'banderivska' }['time'],
     calculated_price:
-      timing_data.find { |e| e['start'].to_s == 'konotopska' && e['end'].to_s == 'shevchenkivska' }['time'] +
-        timing_data.find { |e| e['start'].to_s == 'shevchenkivska' && e['end'].to_s == 'banderivska' }['time'] }
+      timing_data.find { |e| e['start'].to_s == 'konotopska' && e['end'].to_s == 'shevchenkivska' }['price'] +
+        timing_data.find { |e| e['start'].to_s == 'shevchenkivska' && e['end'].to_s == 'banderivska' }['price'] }
 ]
 
 
@@ -61,7 +62,7 @@ end
 
 
 RSpec.describe MetroInfopoint do
-  let(:object) { MetroInfopoint.new(path_to_timing_file: '', path_to_lines_file: '') }
+  let(:object) { MetroInfopoint.new(path_to_timing_file: path_to_file, path_to_lines_file: config_path) }
 
   describe 'valid class' do
     it { expect(MetroInfopoint).to respond_to(:new) }
@@ -82,7 +83,7 @@ RSpec.describe MetroInfopoint do
 
   describe '#calculate' do
     FROM_TO_PAIRS.each do |e|
-      result = { price: e[:calculated_price], time: e[:calculated_time] }
+      result = { price: e[:calculated_price].round(3), time: e[:calculated_time].round(3) }
       it { expect(object.calculate(from_station: e[:from_station], to_station: e[:to_station])).to eq(result) }
     end
   end
